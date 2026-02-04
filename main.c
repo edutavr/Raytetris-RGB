@@ -58,62 +58,75 @@ int main() {
     Color textBase = Themes[currentTheme].text;
     Color highlight = Themes[currentTheme].highlight;
 
+    Vector2 mousePoint = GetMousePosition();
+
+    int textWidth5 = MeasureText("TELA DO JOGO",20);
+    Rectangle backToTheBegginning={20,20,textWidth5,20};
+
+    const char *themeLabel = TextFormat("Theme: %s", Themes[currentTheme].name);
+    int textWidth4 = MeasureText(themeLabel, 20);
+    Rectangle themeButton = {centerPlay+25, 550, textWidth4, 20};
+      
+    Color titleColor = textBase;
+    Color playColor = textBase;
+    Color settingsColor = textBase;
+    Color themeColor = textBase;
+
     switch(currentScreen){
-    //menu-----------------------------------------------------------  
-    case(MAINSCREEN):
-      const char *themeLabel = TextFormat("Theme: %s", Themes[currentTheme].name);
-      int textWidth4 = MeasureText(themeLabel, 20);
-      Rectangle themeButton = {centerPlay+25, 550, textWidth4, 20};
-      
-      Vector2 mousePoint = GetMousePosition();
-      Color titleColor = textBase;
-      Color playColor = textBase;
-      Color settingsColor = textBase;
-      Color themeColor = textBase;
-      
+     case MAINSCREEN:{
+       if (CheckCollisionPointRec(mousePoint, playButton)) {
+  	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	   currentScreen = GAMEPLAY;
+	 }
+       }
+       if (CheckCollisionPointRec(mousePoint, settingsButton)) {
+	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	   currentScreen = SETTINGS;
+	 }
+       }
+       if (CheckCollisionPointRec(mousePoint, themeButton)) {
+	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	   currentTheme = (ThemeOptions)((currentTheme + 1) % THEME_COUNT);
+	 }
+       }
+     }
+     case GAMEPLAY:{
+       if (CheckCollisionPointRec(mousePoint, backToTheBegginning)) {
+	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	   currentScreen = MAINSCREEN;
+	 }
+       }
+     }
+    }
+    BeginDrawing();
+    switch(currentScreen){
+    //draw-menu-----------------------------------------------------------
+    case(MAINSCREEN):      
+      ClearBackground(bgColor);
+      DrawText(title, centerTitle, 20, fontSize, titleColor);
       if (CheckCollisionPointRec(mousePoint, playButton)) {
 	playColor = highlight;
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-	  currentScreen = GAMEPLAY;
-	}
       }
+      DrawText("Play Game", centerPlay , 240, 40, playColor);
       if (CheckCollisionPointRec(mousePoint, settingsButton)) {
 	settingsColor = highlight;
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-	  currentScreen = SETTINGS;
-	}
       }
-      if (CheckCollisionPointRec(mousePoint, themeButton)) {
-	//settingsColor = highlight;
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-	  currentTheme = (ThemeOptions)((currentTheme + 1) % THEME_COUNT);
-	}
-      }
-       
-      BeginDrawing(); 
-      ClearBackground(bgColor);   
-      DrawText(title, centerTitle, 20, fontSize, titleColor);
-      DrawText("Play Game", centerPlay , 240, 40, playColor);
       DrawText("Settings", centerSettings , 300, 40, settingsColor);
       DrawText(themeLabel, centerPlay + 25 , 550, 20, themeColor);
-      EndDrawing();
       break;
       
-    case(GAMEPLAY):
-      BeginDrawing(); 
+    case(GAMEPLAY):{
       ClearBackground(BLACK);   
       DrawText("TELA DO JOGO", 20, 20, 20, WHITE);  
-      EndDrawing();
-      break;
+      break;}
 
     case(SETTINGS):
-      BeginDrawing();
       ClearBackground(bgColor);
       DrawText("SETTINGS", 20, 20, 40, DARKPURPLE);
-      EndDrawing();
       break;      
     }
-    //menu----------------------------------------------------------- 
+    EndDrawing();
+    //draw-menu----------------------------------------------------------- 
    
   }
   
