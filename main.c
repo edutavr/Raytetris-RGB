@@ -1,5 +1,17 @@
 #include "raylib.h"
 
+#define COLS 12 //2 extra columns to the walls
+#define ROWS 21 //1 extra wall to the floor
+#define BOARD_X_AXIS 50
+#define BOARD_Y_AXIS 70
+#define SQUARE_SIZE 24
+
+typedef enum CellState{
+  EMPTY, MOVING_PIECE, PLACED_PIECE, CLEAN_LINE, BOARD_LIMIT
+}CellState;
+
+static CellState grid[COLS][ROWS];
+
 typedef enum MainMenu{
   MAINSCREEN = 0, GAMEPLAY, SETTINGS
 }MainMenu;
@@ -23,6 +35,63 @@ static const ThemeColors Themes[THEME_COUNT] = {
   [YELLOW_THEME]={YELLOW, GOLD, (Color){111,118,17,255}, "Yellow"},
   [ORANGE_THEME]={ORANGE, (Color){230,76,20,255},(Color){168,63,24,255} , "Orange"},
 };
+
+static void GenerateGrid(){
+  for(int x = 0; x < COLS; x++){
+    for(int y = 0; y < ROWS; y++){
+      if (x == 0 || x == COLS - 1 || y == ROWS - 1){
+        grid[x][y] = BOARD_LIMIT;
+      } else {
+        grid[x][y] = EMPTY;
+      }
+    }
+  }
+}
+
+static void GridGraphic(){
+    for (int y = 0; y < ROWS; y++)
+    {
+        for (int x = 0; x < COLS; x++)
+        {
+            int xPos = BOARD_X_AXIS + x * SQUARE_SIZE;
+            int yPos = BOARD_Y_AXIS + y * SQUARE_SIZE;
+
+            switch (grid[x][y])
+            {
+                case EMPTY:
+                    DrawRectangleLines(xPos, yPos, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
+                    break;
+
+                case MOVING_PIECE:
+                    DrawRectangle(xPos, yPos, SQUARE_SIZE, SQUARE_SIZE, DARKGRAY);
+                    break;
+
+                case PLACED_PIECE:
+                    DrawRectangle(xPos, yPos, SQUARE_SIZE, SQUARE_SIZE, GRAY);
+                    break;
+
+                case CLEAN_LINE:
+                    DrawRectangle(xPos, yPos, SQUARE_SIZE, SQUARE_SIZE, ORANGE);
+                    break;
+
+                case BOARD_LIMIT:
+		  DrawRectangle(xPos, yPos, SQUARE_SIZE, SQUARE_SIZE, LIGHTGRAY);
+                    break;
+            }
+        }
+    }
+}
+
+static int frameCounter=0;
+
+static void UpdateGameplay(){
+    frameCounter++;
+    if (frameCounter >= 60)//60fps
+    {
+        frameCounter = 0;
+    }
+}
+
 
 int main() {
   const int screenWidth = 800;
@@ -76,6 +145,7 @@ int main() {
      case MAINSCREEN:{
        if (CheckCollisionPointRec(mousePoint, playButton)) {
   	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	   GenerateGrid();
 	   currentScreen = GAMEPLAY;
 	 }
        }
@@ -89,14 +159,14 @@ int main() {
 	   currentTheme = (ThemeOptions)((currentTheme + 1) % THEME_COUNT);
 	 }
        }
-     }
+     }break;
      case GAMEPLAY:{
        if (CheckCollisionPointRec(mousePoint, backToTheBegginning)) {
 	 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 	   currentScreen = MAINSCREEN;
 	 }
        }
-     }
+     }break;
     }
     BeginDrawing();
     switch(currentScreen){
@@ -116,8 +186,10 @@ int main() {
       break;
       
     case(GAMEPLAY):{
-      ClearBackground(BLACK);   
-      DrawText("TELA DO JOGO", 20, 20, 20, WHITE);  
+      UpdateGameplay();
+      ClearBackground(BLACK);
+      DrawText("TELA DO JOGO", 20, 20, 20, WHITE);
+      GridGraphic();
       break;}
 
     case(SETTINGS):
